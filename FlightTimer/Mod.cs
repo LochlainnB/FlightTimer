@@ -2,6 +2,7 @@
 using RumbleModdingAPI;
 using UnityEngine;
 using HarmonyLib;
+using System;
 
 namespace FlightTimer
 {
@@ -11,12 +12,12 @@ namespace FlightTimer
         private static bool isFlying = false;
 
         // Detect jumps and start the timer
-        [HarmonyPatch(typeof(RUMBLE.Players.Subsystems.PlayerPoseSystem), "OnPoseCompleted")]
-        private static class PlayerPoseSystem_OnPoseCompleted_Patch
+        [HarmonyPatch(typeof(RUMBLE.MoveSystem.Stack), "Execute")]
+        private static class Stack_Execute_Patch
         {
-            private static void Postfix(RUMBLE.Players.Subsystems.PlayerPoseSystem __instance, RUMBLE.Poses.PoseData pose)
+            private static void Postfix(RUMBLE.MoveSystem.Stack __instance, RUMBLE.MoveSystem.StackConfiguration configuration)
             {
-                if (pose.name == "Poses_Jump" && !isFlying)
+                if (__instance.cachedName == "Jump" && !isFlying && !configuration.isRemoteStack)
                 {
                     MelonLogger.Msg("Player is flying!");
                     isFlying = true;
@@ -31,10 +32,11 @@ namespace FlightTimer
         {
             private static void Postfix(RUMBLE.Players.Subsystems.PlayerMovement __instance)
             {
-                if (isFlying)
+                if (isFlying && __instance == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerMovement>())
                 {
                     MelonLogger.Msg("Player has landed.");
-                    MelonLogger.Msg("Flight time: " + timer + " seconds.");
+                    TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
+                    MelonLogger.Msg("Flight time: " + formattedTime.ToString());
                     isFlying = false;
                 }
             }
