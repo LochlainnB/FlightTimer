@@ -29,6 +29,7 @@ namespace FlightTimer
 
         private static double timer = 0.0;
         private static bool isFlying = false;
+        private static readonly HashSet<string> vehicles = new HashSet<string> { "Disc", "Pillar", "Ball", "RockCube", "Wall", "LargeRock", "SmallRock", "BoulderBall" };
 
         // Detect jumps and start the timer
         [HarmonyPatch(typeof(RUMBLE.MoveSystem.Stack), "Execute")]
@@ -45,7 +46,7 @@ namespace FlightTimer
             }
         }
 
-        // Detect landings and stop the timer
+        // Detect landings (on ground) and stop the timer
         [HarmonyPatch(typeof(RUMBLE.Players.Subsystems.PlayerMovement), "OnBecameGrounded")]
         private static class PlayerMovement_OnBecameGrounded_Patch
         {
@@ -54,6 +55,22 @@ namespace FlightTimer
                 if (isFlying && __instance == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerMovement>())
                 {
                     MelonLogger.Msg("Player has landed.");
+                    TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
+                    MelonLogger.Msg("Flight time: " + FormatTimeSpan(formattedTime));
+                    isFlying = false;
+                }
+            }
+        }
+
+        // Detect landings (on objects) and stop the timer
+        [HarmonyPatch(typeof(RUMBLE.Physics.Utility.PlayAudioOnImpact), "OnCollisionEnter")]
+        private static class PlayAudioOnImpact_OnCollisionEnter_Patch
+        {
+            private static void Postfix(RUMBLE.Physics.Utility.PlayAudioOnImpact __instance, Collision collision)
+            {
+                if (isFlying && collision.contacts[0].thisCollider == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().pillBodyCollider && __instance.name == "Physics" && !vehicles.Contains(collision.gameObject.name))
+                {
+                    MelonLogger.Msg("Player has landed on " + collision.gameObject.name);
                     TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
                     MelonLogger.Msg("Flight time: " + FormatTimeSpan(formattedTime));
                     isFlying = false;
