@@ -68,12 +68,19 @@ namespace FlightTimer
         {
             private static void Postfix(RUMBLE.Physics.Utility.PlayAudioOnImpact __instance, Collision collision)
             {
-                if (isFlying && collision.contacts[0].thisCollider == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().pillBodyCollider && __instance.name == "Physics" && !vehicles.Contains(collision.gameObject.name))
+                if (isFlying && collision.contacts[0].thisCollider == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().pillBodyCollider && !vehicles.Contains(collision.gameObject.name))
                 {
-                    MelonLogger.Msg("Player has landed on " + collision.gameObject.name);
-                    TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
-                    MelonLogger.Msg("Flight time: " + FormatTimeSpan(formattedTime));
-                    isFlying = false;
+                    for (int i = 0; i < collision.contactCount; i++)
+                    {
+                        if (collision.contacts[i].normal.y > 0.5f)
+                        {
+                            MelonLogger.Msg("Player has landed on " + collision.gameObject.name);
+                            TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
+                            MelonLogger.Msg("Flight time: " + FormatTimeSpan(formattedTime));
+                            isFlying = false;
+                            return;
+                        }
+                    }
                 }
             }
         }
