@@ -3,11 +3,30 @@ using RumbleModdingAPI;
 using UnityEngine;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 
 namespace FlightTimer
 {
     public class Mod : MelonMod
     {
+        // Format a TimeSpan for display
+        public static string FormatTimeSpan(TimeSpan timeSpan)
+        {
+            List<string> parts = new List<string>();
+
+            if (timeSpan.Days > 0)
+                parts.Add(timeSpan.Days.ToString());
+            if (timeSpan.Hours > 0 || parts.Count > 0)
+                parts.Add(timeSpan.Hours.ToString("D2"));
+            if (timeSpan.Minutes > 0 || parts.Count > 0)
+                parts.Add(timeSpan.Minutes.ToString("D2"));
+            parts.Add(timeSpan.Seconds.ToString("D1") + "." + timeSpan.Milliseconds.ToString("D3"));
+            if (parts.Count == 1)
+                parts[0] += "s";
+
+            return string.Join(":", parts);
+        }
+
         private static double timer = 0.0;
         private static bool isFlying = false;
 
@@ -36,7 +55,7 @@ namespace FlightTimer
                 {
                     MelonLogger.Msg("Player has landed.");
                     TimeSpan formattedTime = TimeSpan.FromSeconds(timer);
-                    MelonLogger.Msg("Flight time: " + formattedTime.ToString());
+                    MelonLogger.Msg("Flight time: " + FormatTimeSpan(formattedTime));
                     isFlying = false;
                 }
             }
