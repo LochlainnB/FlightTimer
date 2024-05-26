@@ -5,6 +5,7 @@ using TMPro;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using RUMBLE.MoveSystem;
 
 namespace FlightTimer
 {
@@ -47,9 +48,9 @@ namespace FlightTimer
         [HarmonyPatch(typeof(RUMBLE.MoveSystem.Stack), "Execute")]
         private static class Stack_Execute_Patch
         {
-            private static void Postfix(RUMBLE.MoveSystem.Stack __instance, RUMBLE.MoveSystem.StackConfiguration configuration)
+            private static void Postfix(RUMBLE.MoveSystem.Stack __instance, IProcessor processor)
             {
-                if (__instance.cachedName == "Jump" && !isFlying && !configuration.isRemoteStack)
+                if (__instance.cachedName == "Jump" && !isFlying && processor.Cast<PlayerStackProcessor>() == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<PlayerStackProcessor>())
                 {
                     isFlying = true;
                     timer = 0.0;
