@@ -49,9 +49,6 @@
     <Reference Include="RUMBLE.Runtime">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RUMBLE_Modded\MelonLoader\Managed\RUMBLE.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="RumbleModdingAPI">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RUMBLE_Modded\Mods\RumbleModdingAPI.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

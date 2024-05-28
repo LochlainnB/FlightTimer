@@ -1,11 +1,12 @@
 ﻿using MelonLoader;
-using RumbleModdingAPI;
 using UnityEngine;
 using TMPro;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using RUMBLE.MoveSystem;
+using RUMBLE.Managers;
+using RUMBLE.Players.Subsystems;
 
 namespace FlightTimer
 {
@@ -54,14 +55,15 @@ namespace FlightTimer
 
         private static GameObject timerObject;
         private static TextMeshPro timerText;
+        private static GameObject healthBar;
 
         // Detect jumps and start the timer
-        [HarmonyPatch(typeof(RUMBLE.MoveSystem.Stack), "Execute")]
+        [HarmonyPatch(typeof(Stack), "Execute")]
         private static class Stack_Execute_Patch
         {
-            private static void Postfix(RUMBLE.MoveSystem.Stack __instance, IProcessor processor)
+            private static void Postfix(Stack __instance, IProcessor processor)
             {
-                if (__instance.cachedName == "Jump" && !isFlying && processor.Cast<PlayerStackProcessor>() == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<PlayerStackProcessor>())
+                if (__instance.cachedName == "Jump" && !isFlying && processor.Cast<PlayerStackProcessor>() == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerStackProcessor>())
                 {
                     isFlying = true;
                     timer = 0.0;
@@ -80,7 +82,7 @@ namespace FlightTimer
         {
             private static void Postfix(RUMBLE.Players.Subsystems.PlayerMovement __instance)
             {
-                if (isFlying && __instance == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerMovement>())
+                if (isFlying && __instance == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerMovement>())
                 {
                     HandleLanding();
                 }
@@ -93,7 +95,7 @@ namespace FlightTimer
         {
             private static void Postfix(RUMBLE.Physics.Utility.PlayAudioOnImpact __instance, Collision collision)
             {
-                if (isFlying && collision.contacts[0].thisCollider == Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().pillBodyCollider && !vehicles.Contains(collision.gameObject.name))
+                if (isFlying && collision.contacts[0].thisCollider == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerPhysics>().pillBodyCollider && !vehicles.Contains(collision.gameObject.name))
                 {
                     for (int i = 0; i < collision.contactCount; i++)
                     {
@@ -159,6 +161,7 @@ namespace FlightTimer
         // Create the timer display
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
+            healthBar = null;
             if (sceneName == "Gym" && timerObject == null)
             {
                 timerObject = new GameObject("FlightTimer");
@@ -192,21 +195,26 @@ namespace FlightTimer
                 if (timerObject != null)
                     timerText.text = FormatTimeSpan(TimeSpan.FromSeconds(timer));
             }
-            if (timerObject != null && Calls.Players.GetLocalPlayer().Controller != null)
+            if (timerObject != null && PlayerManager.instance.localPlayer.Controller != null)
             {
                 if (!(bool)displayAboveHealth.Value)
                 {
-                    Transform handTransform = Calls.Players.GetLocalPlayer().Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
+                    Transform handTransform = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
                     timerObject.transform.position = handTransform.position;
                     timerObject.transform.Translate((bool)swapHand.Value ? rightRelativeTranslate : leftRelativeTranslate, handTransform);
                     timerObject.transform.Translate(globalTranslate, Space.World);
                 }
                 else
                 {
-                    Transform healthTransform = Calls.Players.GetLocalHealthbarGameObject().transform.GetChild(1);
-                    timerObject.transform.position = healthTransform.position;
-                    timerObject.transform.Translate(healthRelativeTranslate, healthTransform);
-                    timerObject.transform.Translate(Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().physicsRigidbody.velocity * Time.deltaTime, Space.World);
+                    if (healthBar == null)
+                        healthBar = GameObject.Find("Health");
+                    if (healthBar != null)
+                    {
+                        Transform healthTransform = healthBar.transform.GetChild(1);
+                        timerObject.transform.position = healthTransform.position;
+                        timerObject.transform.Translate(healthRelativeTranslate, healthTransform);
+                        timerObject.transform.Translate(PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerPhysics>().physicsRigidbody.velocity * Time.deltaTime, Space.World);
+                    }
                 }
                 timerObject.transform.rotation = Quaternion.LookRotation(timerObject.transform.position - Camera.main.transform.position);
             }
