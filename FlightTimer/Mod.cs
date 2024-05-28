@@ -134,7 +134,7 @@ namespace FlightTimer
 
             settings.GetFromFile();
 
-            displayTimer.CurrentValueChanged += OnDisplayTimerChange;
+            displayTimer.SavedValueChanged += OnDisplayTimerChange;
 
             RumbleModUI.UI.instance.UI_Initialized += OnUIInit;
         }
@@ -150,8 +150,8 @@ namespace FlightTimer
         {
             if (timerObject != null)
             {
-                // displayTimer.Value currently stores the OLD value. Since it is a bool, the new value must be !old
-                if (!(bool)displayTimer.Value)
+                // displayTimer.SavedValue currently stores the OLD value. Since it is a bool, the new value must be !old
+                if (!(bool)displayTimer.SavedValue)
                     timerText.maxVisibleCharacters = 999;
                 else
                     timerText.maxVisibleCharacters = 0;
@@ -181,7 +181,7 @@ namespace FlightTimer
                 timerText.color = Color.white;
                 timerText.alignment = TextAlignmentOptions.Center;
                 timerText.enableWordWrapping = false;
-                if (!(bool)displayTimer.Value)
+                if (!(bool)displayTimer.SavedValue)
                     timerText.maxVisibleCharacters = 0;
             }
         }
@@ -197,11 +197,11 @@ namespace FlightTimer
             }
             if (timerObject != null && PlayerManager.instance.localPlayer.Controller != null)
             {
-                if (!(bool)displayAboveHealth.Value)
+                if (!(bool)displayAboveHealth.SavedValue)
                 {
-                    Transform handTransform = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
+                    Transform handTransform = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.SavedValue ? 2 : 1);
                     timerObject.transform.position = handTransform.position;
-                    timerObject.transform.Translate((bool)swapHand.Value ? rightRelativeTranslate : leftRelativeTranslate, handTransform);
+                    timerObject.transform.Translate((bool)swapHand.SavedValue ? rightRelativeTranslate : leftRelativeTranslate, handTransform);
                     timerObject.transform.Translate(globalTranslate, Space.World);
                 }
                 else
