@@ -135,6 +135,7 @@ namespace FlightTimer
             settings.GetFromFile();
 
             displayTimer.SavedValueChanged += OnDisplayTimerChange;
+            displayAboveHealth.SavedValueChanged += OnDisplayAboveHealthChanged;
 
             RumbleModUI.UI.instance.UI_Initialized += OnUIInit;
         }
@@ -158,14 +159,27 @@ namespace FlightTimer
             }
         }
 
+        // Change display parent
+        public static void OnDisplayAboveHealthChanged()
+        {
+            if (timerObject != null)
+            {
+                // displayAboveHealth.SavedValue currently stores the OLD value. Since it is a bool, the new value must be !old
+                if (!(bool)displayAboveHealth.SavedValue)
+                    healthBar = null;
+                else
+                    timerObject.transform.parent = null;
+            }
+        }
+
         // Create the timer display
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
             healthBar = null;
-            if (sceneName == "Gym" && timerObject == null)
+
+            if (timerObject == null)
             {
                 timerObject = new GameObject("FlightTimer");
-                GameObject.DontDestroyOnLoad(timerObject);
 
                 timerText = timerObject.AddComponent<TextMeshPro>();
                 timerText.text = FormatTimeSpan(new TimeSpan(0));
@@ -207,13 +221,13 @@ namespace FlightTimer
                 else
                 {
                     if (healthBar == null)
-                        healthBar = GameObject.Find("Health");
-                    if (healthBar != null)
                     {
-                        Transform healthTransform = healthBar.transform.GetChild(1);
-                        timerObject.transform.position = healthTransform.position;
-                        timerObject.transform.Translate(healthRelativeTranslate, healthTransform);
-                        timerObject.transform.Translate(PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerPhysics>().physicsRigidbody.velocity * Time.deltaTime, Space.World);
+                        healthBar = GameObject.Find("Health");
+                        if (healthBar != null)
+                        {
+                            timerObject.transform.parent = healthBar.transform.GetChild(1);
+                            timerObject.transform.localPosition = healthRelativeTranslate;
+                        }
                     }
                 }
                 timerObject.transform.rotation = Quaternion.LookRotation(timerObject.transform.position - Camera.main.transform.position);
