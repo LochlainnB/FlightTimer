@@ -31,7 +31,8 @@ namespace FlightTimer
         }
 
         // How much to move the timer display relative to the player's hand
-        private static readonly Vector3 relativeTranslate = new Vector3(-0.03f, -0.02f, 0.0f);
+        private static readonly Vector3 leftRelativeTranslate = new Vector3(-0.03f, -0.02f, 0.0f);
+        private static readonly Vector3 rightRelativeTranslate = new Vector3(-leftRelativeTranslate.x, leftRelativeTranslate.y, leftRelativeTranslate.z);
         // How much to move the timer display globally
         private static readonly Vector3 globalTranslate = new Vector3(0.0f, 0.15f, 0.0f);
         // Names of objects that the player can land on without stopping the timer
@@ -191,9 +192,9 @@ namespace FlightTimer
             }
             if (timerObject != null && Calls.Players.GetLocalPlayer().Controller != null)
             {
-                Transform leftHandTransform = Calls.Players.GetLocalPlayer().Controller.gameObject.transform.GetChild(1).GetChild(1);
+                Transform leftHandTransform = Calls.Players.GetLocalPlayer().Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
                 timerObject.transform.position = leftHandTransform.position;
-                timerObject.transform.Translate(relativeTranslate, leftHandTransform);
+                timerObject.transform.Translate((bool)swapHand.Value ? rightRelativeTranslate : leftRelativeTranslate, leftHandTransform);
                 timerObject.transform.Translate(globalTranslate, Space.World);
                 timerObject.transform.rotation = Quaternion.LookRotation(timerObject.transform.position - Camera.main.transform.position);
             }
