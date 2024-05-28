@@ -9,6 +9,7 @@ using RUMBLE.MoveSystem;
 
 namespace FlightTimer
 {
+
     public class Mod : MelonMod
     {
         // Format a TimeSpan for display
@@ -38,6 +39,13 @@ namespace FlightTimer
         // Collisions between the player and an object with a normal.y greater than this value will be considered landings
         private static readonly float maxNormalY = 0.5f;
 
+        private static RumbleModUI.Mod settings = new RumbleModUI.Mod();
+        private static RumbleModUI.ModSetting<bool> displayTimer;
+        private static RumbleModUI.ModSetting<bool> logTimes;
+        private static RumbleModUI.ModSetting<bool> swapHand;
+        private static RumbleModUI.ModSetting<bool> displayAboveHealth;
+
+
         private static double timer = 0.0;
         private static bool isFlying = false;
 
@@ -58,7 +66,6 @@ namespace FlightTimer
                     {
                         timerText.text = FormatTimeSpan(new TimeSpan(0));
                         timerText.color = Color.white;
-                        timerText.maxVisibleCharacters = 999;
                     }
                 }
             }
@@ -99,11 +106,50 @@ namespace FlightTimer
         // Handle landings
         private static void HandleLanding()
         {
-            MelonLogger.Msg("Flight time: " + FormatTimeSpan(TimeSpan.FromSeconds(timer)));
+            if ((bool)logTimes.Value)
+                MelonLogger.Msg("Flight time: " + FormatTimeSpan(TimeSpan.FromSeconds(timer)));
             isFlying = false;
             if (timerObject != null)
             {
                 timerText.color = Color.green;
+            }
+        }
+
+        // Load settings
+        public override void OnLateInitializeMelon()
+        {
+            settings.ModName = "FlightTimer";
+            settings.ModVersion = "1.0.0";
+            settings.SetFolder("FlightTimer");
+            
+            displayTimer = settings.AddToList("Display Timer", true, Description:"Disable to hide the timer. Times will still be logged if \"Log Times\" is true.");
+            logTimes = settings.AddToList("Log Times", true, Description:"Enable to log flight times to the console.");
+            swapHand = settings.AddToList("Swap Hand", false, Description:"Enable to display the timer on the right hand instead of the left.");
+            displayAboveHealth = settings.AddToList("Display Above Health", false, Description:"Enable to display the timer above the health bar instead of either hand.");
+
+            settings.GetFromFile();
+
+            displayTimer.CurrentValueChanged += OnDisplayTimerChange;
+
+            RumbleModUI.UI.instance.UI_Initialized += OnUIInit;
+        }
+
+        // Display settings
+        public static void OnUIInit()
+        {
+            RumbleModUI.UI.instance.AddMod(settings);
+        }
+
+        // Hide/show timer
+        public static void OnDisplayTimerChange()
+        {
+            if (timerObject != null)
+            {
+                // displayTimer.Value currently stores the OLD value. Since it is a bool, the new value must be !old
+                if (!(bool)displayTimer.Value)
+                    timerText.maxVisibleCharacters = 999;
+                else
+                    timerText.maxVisibleCharacters = 0;
             }
         }
 
@@ -129,7 +175,8 @@ namespace FlightTimer
                 timerText.color = Color.white;
                 timerText.alignment = TextAlignmentOptions.Center;
                 timerText.enableWordWrapping = false;
-                timerText.maxVisibleCharacters = 0;
+                if (!(bool)displayTimer.Value)
+                    timerText.maxVisibleCharacters = 0;
             }
         }
 

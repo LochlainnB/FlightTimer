@@ -40,6 +40,9 @@
     <Reference Include="MelonLoader">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RUMBLE_Modded\MelonLoader\MelonLoader.dll</HintPath>
     </Reference>
+    <Reference Include="ModUI">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RUMBLE\Mods\ModUI.dll</HintPath>
+    </Reference>
     <Reference Include="RUMBLE.Runtime">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RUMBLE_Modded\MelonLoader\Managed\RUMBLE.Runtime.dll</HintPath>
     </Reference>
