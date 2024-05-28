@@ -33,8 +33,10 @@ namespace FlightTimer
         // How much to move the timer display relative to the player's hand
         private static readonly Vector3 leftRelativeTranslate = new Vector3(-0.03f, -0.02f, 0.0f);
         private static readonly Vector3 rightRelativeTranslate = new Vector3(-leftRelativeTranslate.x, leftRelativeTranslate.y, leftRelativeTranslate.z);
-        // How much to move the timer display globally
+        // How much to move the timer display globally when attached to the player's hand
         private static readonly Vector3 globalTranslate = new Vector3(0.0f, 0.15f, 0.0f);
+        // How much to move the timer display relative to the health bar
+        private static readonly Vector3 healthRelativeTranslate = new Vector3(0.0f, 0.05f, 1.0f);
         // Names of objects that the player can land on without stopping the timer
         private static readonly HashSet<string> vehicles = new HashSet<string> { "Disc", "Pillar", "Ball", "RockCube", "Wall", "LargeRock", "SmallRock", "BoulderBall" };
         // Collisions between the player and an object with a normal.y greater than this value will be considered landings
@@ -192,10 +194,20 @@ namespace FlightTimer
             }
             if (timerObject != null && Calls.Players.GetLocalPlayer().Controller != null)
             {
-                Transform leftHandTransform = Calls.Players.GetLocalPlayer().Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
-                timerObject.transform.position = leftHandTransform.position;
-                timerObject.transform.Translate((bool)swapHand.Value ? rightRelativeTranslate : leftRelativeTranslate, leftHandTransform);
-                timerObject.transform.Translate(globalTranslate, Space.World);
+                if (!(bool)displayAboveHealth.Value)
+                {
+                    Transform handTransform = Calls.Players.GetLocalPlayer().Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.Value ? 2 : 1);
+                    timerObject.transform.position = handTransform.position;
+                    timerObject.transform.Translate((bool)swapHand.Value ? rightRelativeTranslate : leftRelativeTranslate, handTransform);
+                    timerObject.transform.Translate(globalTranslate, Space.World);
+                }
+                else
+                {
+                    Transform healthTransform = Calls.Players.GetLocalHealthbarGameObject().transform.GetChild(1);
+                    timerObject.transform.position = healthTransform.position;
+                    timerObject.transform.Translate(healthRelativeTranslate, healthTransform);
+                    timerObject.transform.Translate(Calls.Players.GetLocalPlayer().Controller.GetSubsystem<RUMBLE.Players.Subsystems.PlayerPhysics>().physicsRigidbody.velocity * Time.deltaTime, Space.World);
+                }
                 timerObject.transform.rotation = Quaternion.LookRotation(timerObject.transform.position - Camera.main.transform.position);
             }
         }
