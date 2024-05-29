@@ -52,6 +52,7 @@ namespace FlightTimer
 
         private static double timer = 0.0;
         private static bool isFlying = false;
+        private static bool takeoffChecked = false;
 
         private static GameObject timerObject;
         private static TextMeshPro timerText;
@@ -66,6 +67,7 @@ namespace FlightTimer
                 if (__instance.cachedName == "Jump" && !isFlying && processor.Cast<PlayerStackProcessor>() == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerStackProcessor>())
                 {
                     isFlying = true;
+                    takeoffChecked = false;
                     timer = 0.0;
                     if (timerObject != null)
                     {
@@ -77,10 +79,10 @@ namespace FlightTimer
         }
 
         // Detect landings (on ground) and stop the timer
-        [HarmonyPatch(typeof(RUMBLE.Players.Subsystems.PlayerMovement), "OnBecameGrounded")]
+        [HarmonyPatch(typeof(PlayerMovement), "OnBecameGrounded")]
         private static class PlayerMovement_OnBecameGrounded_Patch
         {
-            private static void Postfix(RUMBLE.Players.Subsystems.PlayerMovement __instance)
+            private static void Postfix(PlayerMovement __instance)
             {
                 if (isFlying && __instance == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerMovement>())
                 {
@@ -208,6 +210,14 @@ namespace FlightTimer
                 timer += Time.deltaTime;
                 if (timerObject != null)
                     timerText.text = FormatTimeSpan(TimeSpan.FromSeconds(timer));
+
+                // Check for bugged takeoff
+                if (!takeoffChecked && timer > 1.0)
+                {
+                    takeoffChecked = true;
+                    if (PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerMovement>().IsGrounded())
+                        HandleLanding();
+                }
             }
             if (timerObject != null && PlayerManager.instance.localPlayer.Controller != null)
             {
