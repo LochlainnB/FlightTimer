@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using FlightTimer;
 
-[assembly: MelonInfo(typeof(Mod), "FlightTimer", "1.1.1", "MasterMischief")]
+[assembly: MelonInfo(typeof(Mod), "FlightTimer", "2.0.0", "MasterMischief")]
 [assembly: MelonGame("Buckethead Entertainment", "RUMBLE")]
 
 // General Information about an assembly is controlled through the following

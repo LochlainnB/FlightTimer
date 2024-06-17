@@ -1,12 +1,12 @@
 ﻿using MelonLoader;
 using UnityEngine;
-using TMPro;
+using Il2CppTMPro;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using RUMBLE.MoveSystem;
-using RUMBLE.Managers;
-using RUMBLE.Players.Subsystems;
+using Il2CppRUMBLE.MoveSystem;
+using Il2CppRUMBLE.Managers;
+using Il2CppRUMBLE.Players.Subsystems;
 
 namespace FlightTimer
 {
@@ -92,10 +92,10 @@ namespace FlightTimer
         }
 
         // Detect landings (on objects) and stop the timer
-        [HarmonyPatch(typeof(RUMBLE.Physics.Utility.PlayAudioOnImpact), "OnCollisionEnter")]
+        [HarmonyPatch(typeof(Il2CppRUMBLE.Physics.Utility.PlayAudioOnImpact), "OnCollisionEnter")]
         private static class PlayAudioOnImpact_OnCollisionEnter_Patch
         {
-            private static void Postfix(RUMBLE.Physics.Utility.PlayAudioOnImpact __instance, Collision collision)
+            private static void Postfix(Il2CppRUMBLE.Physics.Utility.PlayAudioOnImpact __instance, Collision collision)
             {
                 if (isFlying && collision.contacts[0].thisCollider == PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerPhysics>().pillBodyCollider && !vehicles.Contains(collision.gameObject.name))
                 {
@@ -129,10 +129,12 @@ namespace FlightTimer
             settings.ModVersion = "1.0.0";
             settings.SetFolder("FlightTimer");
             
-            displayTimer = settings.AddToList("Display Timer", true, Description:"Disable to hide the timer. Times will still be logged if \"Log Times\" is true.");
-            logTimes = settings.AddToList("Log Times", true, Description:"Enable to log flight times to the console.");
-            swapHand = settings.AddToList("Swap Hand", false, Description:"Enable to display the timer on the right hand instead of the left.");
-            displayAboveHealth = settings.AddToList("Display Above Health", false, Description:"Enable to display the timer above the health bar instead of either hand.");
+            //deprecated overloads
+            displayTimer = settings.AddToList("Display Timer", true, 0, "Disable to hide the timer. Times will still be logged if \"Log Times\" is true.", new RumbleModUI.Tags());
+            logTimes = settings.AddToList("Log Times", true, 0, "Enable to log flight times to the console.", new RumbleModUI.Tags());
+            swapHand = settings.AddToList("Swap Hand", false, 0, "Enable to display the timer on the right hand instead of the left.", new RumbleModUI.Tags());
+            displayAboveHealth = settings.AddToList("Display Above Health", false, 0, "Enable to display the timer above the health bar instead of either hand.", new RumbleModUI.Tags());
+            //new overloads
 
             settings.GetFromFile();
 
@@ -149,12 +151,11 @@ namespace FlightTimer
         }
 
         // Hide/show timer
-        public static void OnDisplayTimerChange()
+        public static void OnDisplayTimerChange(object sender, EventArgs args)
         {
             if (timerObject != null)
             {
-                // displayTimer.SavedValue currently stores the OLD value. Since it is a bool, the new value must be !old
-                if (!(bool)displayTimer.SavedValue)
+                if (((RumbleModUI.ValueChange<bool>)args).Value)
                     timerText.maxVisibleCharacters = 999;
                 else
                     timerText.maxVisibleCharacters = 0;
@@ -162,12 +163,11 @@ namespace FlightTimer
         }
 
         // Change display parent
-        public static void OnDisplayAboveHealthChanged()
+        public static void OnDisplayAboveHealthChanged(object sender, EventArgs args)
         {
             if (timerObject != null)
             {
-                // displayAboveHealth.SavedValue currently stores the OLD value. Since it is a bool, the new value must be !old
-                if (!(bool)displayAboveHealth.SavedValue)
+                if (((RumbleModUI.ValueChange<bool>)args).Value)
                     healthBar = null;
                 else
                     timerObject.transform.parent = null;
@@ -219,7 +219,7 @@ namespace FlightTimer
                         HandleLanding();
                 }
             }
-            if (timerObject != null && PlayerManager.instance.localPlayer.Controller != null)
+            if (timerObject != null && PlayerManager.instance != null && PlayerManager.instance.localPlayer != null && PlayerManager.instance.localPlayer.Controller != null)
             {
                 if (!(bool)displayAboveHealth.SavedValue)
                 {
