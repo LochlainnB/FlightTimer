@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Il2CppRUMBLE.MoveSystem;
 using Il2CppRUMBLE.Managers;
 using Il2CppRUMBLE.Players.Subsystems;
+using System.Linq;
 
 namespace FlightTimer
 {
@@ -232,7 +233,15 @@ namespace FlightTimer
                 {
                     if (healthBar == null)
                     {
-                        healthBar = GameObject.Find("Health");
+                        GameObject[] healthBars = GameObject.FindObjectsOfType<GameObject>();
+                        for (int i = 0; i < healthBars.Length; i++)
+                        {
+                            if (healthBars[i].name == "Health")
+                            {
+                                healthBar = healthBars[i];
+                                break;
+                            }
+                        }
                         if (healthBar != null)
                         {
                             timerObject.transform.parent = healthBar.transform.GetChild(1);
