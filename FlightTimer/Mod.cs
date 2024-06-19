@@ -123,6 +123,32 @@ namespace FlightTimer
             }
         }
 
+        // Create the timer display
+        private static void CreateTimer()
+        {
+            if (timerObject == null)
+            {
+                timerObject = new GameObject("FlightTimer");
+
+                timerText = timerObject.AddComponent<TextMeshPro>();
+                timerText.text = FormatTimeSpan(new TimeSpan(0));
+                foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll<TMP_FontAsset>())
+                {
+                    if (font.name == "GOODDP__ SDF Global Text Material")
+                    {
+                        timerText.font = font;
+                        break;
+                    }
+                }
+                timerText.fontSize = 0.5f;
+                timerText.color = Color.white;
+                timerText.alignment = TextAlignmentOptions.Center;
+                timerText.enableWordWrapping = false;
+                if (!(bool)displayTimer.SavedValue)
+                    timerText.maxVisibleCharacters = 0;
+            }
+        }
+
         // Load settings
         public override void OnLateInitializeMelon()
         {
@@ -175,32 +201,10 @@ namespace FlightTimer
             }
         }
 
-        // Create the timer display
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
             healthBar = null;
-
-            if (timerObject == null)
-            {
-                timerObject = new GameObject("FlightTimer");
-
-                timerText = timerObject.AddComponent<TextMeshPro>();
-                timerText.text = FormatTimeSpan(new TimeSpan(0));
-                foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll<TMP_FontAsset>())
-                {
-                    if (font.name == "GOODDP__ SDF Global Text Material")
-                    {
-                        timerText.font = font;
-                        break;
-                    }
-                }
-                timerText.fontSize = 0.5f;
-                timerText.color = Color.white;
-                timerText.alignment = TextAlignmentOptions.Center;
-                timerText.enableWordWrapping = false;
-                if (!(bool)displayTimer.SavedValue)
-                    timerText.maxVisibleCharacters = 0;
-            }
+            CreateTimer();
         }
 
         // Update the timer & display
@@ -215,11 +219,14 @@ namespace FlightTimer
                 // Check for bugged takeoff
                 if (!takeoffChecked && timer > 1.0)
                 {
+                    MelonLogger.Msg((timerObject != null) + " " + (PlayerManager.instance != null) + " " + (PlayerManager.instance.localPlayer != null) + " " + (PlayerManager.instance.localPlayer.Controller != null));
                     takeoffChecked = true;
                     if (PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerMovement>().IsGrounded())
                         HandleLanding();
                 }
             }
+            if (timerObject == null)
+                CreateTimer();
             if (timerObject != null && PlayerManager.instance != null && PlayerManager.instance.localPlayer != null && PlayerManager.instance.localPlayer.Controller != null)
             {
                 if (!(bool)displayAboveHealth.SavedValue)
@@ -233,18 +240,10 @@ namespace FlightTimer
                 {
                     if (healthBar == null)
                     {
-                        GameObject[] healthBars = GameObject.FindObjectsOfType<GameObject>();
-                        for (int i = 0; i < healthBars.Length; i++)
-                        {
-                            if (healthBars[i].name == "Health")
-                            {
-                                healthBar = healthBars[i];
-                                break;
-                            }
-                        }
+                        healthBar = PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerHealth>().localHealthbar;
                         if (healthBar != null)
                         {
-                            timerObject.transform.parent = healthBar.transform.GetChild(1);
+                            timerObject.transform.parent = healthBar.transform;
                             timerObject.transform.localPosition = healthRelativeTranslate;
                         }
                     }
