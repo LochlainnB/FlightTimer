@@ -219,7 +219,6 @@ namespace FlightTimer
                 // Check for bugged takeoff
                 if (!takeoffChecked && timer > 1.0)
                 {
-                    MelonLogger.Msg((timerObject != null) + " " + (PlayerManager.instance != null) + " " + (PlayerManager.instance.localPlayer != null) + " " + (PlayerManager.instance.localPlayer.Controller != null));
                     takeoffChecked = true;
                     if (PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerMovement>().IsGrounded())
                         HandleLanding();
