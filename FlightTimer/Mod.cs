@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Il2CppRUMBLE.MoveSystem;
 using Il2CppRUMBLE.Managers;
 using Il2CppRUMBLE.Players.Subsystems;
-using System.Linq;
 
 namespace FlightTimer
 {
@@ -153,15 +152,13 @@ namespace FlightTimer
         public override void OnLateInitializeMelon()
         {
             settings.ModName = "FlightTimer";
-            settings.ModVersion = "1.0.0";
+            settings.ModVersion = "2.1.0";
             settings.SetFolder("FlightTimer");
             
-            //deprecated overloads
             displayTimer = settings.AddToList("Display Timer", true, 0, "Disable to hide the timer. Times will still be logged if \"Log Times\" is true.", new RumbleModUI.Tags());
             logTimes = settings.AddToList("Log Times", true, 0, "Enable to log flight times to the console.", new RumbleModUI.Tags());
             swapHand = settings.AddToList("Swap Hand", false, 0, "Enable to display the timer on the right hand instead of the left.", new RumbleModUI.Tags());
             displayAboveHealth = settings.AddToList("Display Above Health", false, 0, "Enable to display the timer above the health bar instead of either hand.", new RumbleModUI.Tags());
-            //new overloads
 
             settings.GetFromFile();
 
@@ -230,7 +227,7 @@ namespace FlightTimer
             {
                 if (!(bool)displayAboveHealth.SavedValue)
                 {
-                    Transform handTransform = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(1).GetChild((bool)swapHand.SavedValue ? 2 : 1);
+                    Transform handTransform = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(2).GetChild((bool)swapHand.SavedValue ? 2 : 1);
                     timerObject.transform.position = handTransform.position;
                     timerObject.transform.Translate((bool)swapHand.SavedValue ? rightRelativeTranslate : leftRelativeTranslate, handTransform);
                     timerObject.transform.Translate(globalTranslate, Space.World);
@@ -239,7 +236,7 @@ namespace FlightTimer
                 {
                     if (healthBar == null)
                     {
-                        healthBar = PlayerManager.instance.localPlayer.Controller.GetSubsystem<PlayerHealth>().localHealthbar;
+                        healthBar = PlayerManager.instance.localPlayer.Controller.gameObject.transform.GetChild(6).GetChild(0).gameObject;
                         if (healthBar != null)
                         {
                             timerObject.transform.parent = healthBar.transform;
