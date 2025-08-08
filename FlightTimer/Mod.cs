@@ -112,7 +112,7 @@ namespace FlightTimer
         }
 
         // Detect the end of a Rock Race and stop the timer
-        [HarmonyPatch(typeof(ParkMinigame), "OnMiniGameEnded")]
+        [HarmonyPatch(typeof(RockRace), "OnMiniGameEnded")]
         private static class Patch
         {
             private static void Prefix()
