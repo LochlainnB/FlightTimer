@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Il2CppRUMBLE.MoveSystem;
 using Il2CppRUMBLE.Managers;
 using Il2CppRUMBLE.Players.Subsystems;
+using Il2CppRUMBLE.Environment.Minigames;
 
 namespace FlightTimer
 {
@@ -105,6 +106,27 @@ namespace FlightTimer
                         {
                             HandleLanding();
                         }
+                    }
+                }
+            }
+        }
+
+        // Detect the end of a Rock Race and stop the timer
+        [HarmonyPatch(typeof(ParkMinigame), "OnMiniGameEnded")]
+        private static class Patch
+        {
+            private static void Prefix()
+            {
+                if (isFlying)
+                {
+                    if ((bool)logTimes.Value)
+                    {
+                        MelonLogger.Msg("Flick Racing time: " + FormatTimeSpan(TimeSpan.FromSeconds(timer)));
+                    }
+                    isFlying = false;
+                    if (timerObject != null)
+                    {
+                        timerText.color = Color.red;
                     }
                 }
             }
