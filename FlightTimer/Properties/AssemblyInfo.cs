@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using FlightTimer;
 
-[assembly: MelonInfo(typeof(Mod), "FlightTimer", "2.1.0", "MasterMischief")]
+[assembly: MelonInfo(typeof(Mod), "FlightTimer", "2.1.1", "MasterMischief")]
 [assembly: MelonGame("Buckethead Entertainment", "RUMBLE")]
 
 // General Information about an assembly is controlled through the following
@@ -37,5 +37,5 @@ using FlightTimer;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.1.0")]
-[assembly: AssemblyFileVersion("2.1.0")]
+[assembly: AssemblyVersion("2.1.1")]
+[assembly: AssemblyFileVersion("2.1.1")]

@@ -111,9 +111,9 @@ namespace FlightTimer
             }
         }
 
-        // Detect the end of a Rock Race and stop the timer
-        [HarmonyPatch(typeof(RockRace), "OnMiniGameEnded")]
-        private static class Patch
+        // Detect the end of a minigame and stop the timer
+        [HarmonyPatch(typeof(ParkMinigame), "OnMiniGameEnded")]
+        private static class ParkMinigame_OnMiniGameEnded_Patch
         {
             private static void Prefix()
             {
@@ -174,7 +174,7 @@ namespace FlightTimer
         public override void OnLateInitializeMelon()
         {
             settings.ModName = "FlightTimer";
-            settings.ModVersion = "2.1.0";
+            settings.ModVersion = "2.1.1";
             settings.SetFolder("FlightTimer");
             
             displayTimer = settings.AddToList("Display Timer", true, 0, "Disable to hide the timer. Times will still be logged if \"Log Times\" is true.", new RumbleModUI.Tags());
